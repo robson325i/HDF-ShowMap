@@ -21,7 +21,7 @@ namespace HDF_ShowMap
 
             H5.open();
             long fileId = H5F.open(fileName, H5F.ACC_RDONLY); // Abrir arquivo para somente leitura
-            string dataSetName = "/" + Path.GetFileNameWithoutExtension(fileName);
+            string dataSetName = "/XRF/" + Path.GetFileNameWithoutExtension(fileName);
             long dataSetId = H5D.open(fileId, dataSetName);
             long dataSpace = H5D.get_space(dataSetId);
 
@@ -30,9 +30,9 @@ namespace HDF_ShowMap
             H5S.get_simple_extent_dims(dataSpace, dims, null);
 
             // HeatMap data
-            double[,] data = new double[dims[0], dims[1]]; // invertido
+            double[,] data = new double[dims[0], dims[1]];
             Heatmap hm = formsPlot1.Plot.Add.Heatmap(data);
-            hm.FlipVertically = true; // Inverter eixo y
+            hm.FlipVertically = false; // Inverter eixo y
 
             formsPlot1.Plot.Axes.AutoScale();
             hm.Colormap = new ScottPlot.Colormaps.Grayscale(); // mapa de cores
@@ -42,30 +42,30 @@ namespace HDF_ShowMap
             // Ler o dataset do HDF, linha por linha
             _ = Task.Run(() =>
             {
-                for (ulong y = 0; y < dims[0]; y++)
+                for (ulong y = 0; y < dims[1]; y++)
                 {
                     // Definir Hyperslab
-                    ulong[] start = [y, 0, 0];
-                    ulong[] count = [1, dims[1], dims[2]]; // Selecionar uma linha (valor y)
+                    ulong[] start = [0, y, 0];
+                    ulong[] count = [dims[0], 1, dims[2]]; // Selecionar uma linha (valor y)
                     int s = H5S.select_hyperslab(dataSpace, H5S.seloper_t.SET, start, null, count, null);
 
                     // Alocar espaço na memória para leitura dos dados
                     long memSpace = H5S.create_simple(3, count, null);
 
-                    double[,,] hdfData = new double[1, dims[1], dims[2]]; // y, x, z
+                    double[,,] hdfData = new double[dims[0], 1, dims[2]]; // x, y, z
                     GCHandle dataHandle = GCHandle.Alloc(hdfData, GCHandleType.Pinned);
                     _ = H5D.read(dataSetId, H5T.NATIVE_DOUBLE, memSpace, dataSpace, H5P.DEFAULT, dataHandle.AddrOfPinnedObject());
                     dataHandle.Free();
                     _ = H5S.close(memSpace);
 
                     // somar valores
-                    for (ulong x = 0; x < dims[1]; x++)
+                    for (ulong x = 0; x < dims[0]; x++)
                     {
                         double sum = 0;
 
                         for (ulong z = 0; z < dims[2]; z++)
                         {
-                            sum += hdfData[0, x, z];
+                            sum += hdfData[x, 0, z];
                         }
 
                         data[y, x] = sum;
@@ -96,7 +96,7 @@ namespace HDF_ShowMap
         {
             formsPlot1.Plot.HideGrid();
             formsPlot1.Plot.HideLegend();
-            formsPlot1.Plot.Layout.Frameless();
+            //formsPlot1.Plot.Layout.Frameless();
         }
     }
 }
