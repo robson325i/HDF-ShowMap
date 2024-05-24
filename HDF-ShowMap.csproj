@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="HDF.PInvoke.1.10" Version="1.10.612" />
-    <PackageReference Include="ScottPlot.WinForms" Version="5.0.26" />
+    <PackageReference Include="ScottPlot.WinForms" Version="5.0.34" />
   </ItemGroup>
 
 </Project>

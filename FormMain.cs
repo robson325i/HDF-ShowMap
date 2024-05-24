@@ -1,5 +1,4 @@
 ﻿using HDF.PInvoke;
-using ScottPlot;
 using ScottPlot.Plottables;
 using System.Runtime.InteropServices;
 
@@ -19,7 +18,10 @@ namespace HDF_ShowMap
                 return;
             }
 
-            H5.open();
+            formsPlot1.Plot.Clear();
+            formsPlot1.Refresh();
+
+            _ = H5.open();
             long fileId = H5F.open(fileName, H5F.ACC_RDONLY); // Abrir arquivo para somente leitura
             string dataSetName = "/XRF/" + Path.GetFileNameWithoutExtension(fileName);
             long dataSetId = H5D.open(fileId, dataSetName);
@@ -27,17 +29,17 @@ namespace HDF_ShowMap
 
             int rank = H5S.get_simple_extent_ndims(dataSpace); // Quantidade de dimensões do dataset
             ulong[] dims = new ulong[rank];
-            H5S.get_simple_extent_dims(dataSpace, dims, null);
+            _ = H5S.get_simple_extent_dims(dataSpace, dims, null);
 
             // HeatMap data
-            double[,] data = new double[dims[0], dims[1]];
-            Heatmap hm = formsPlot1.Plot.Add.Heatmap(data);
-            hm.FlipVertically = false; // Inverter eixo y
+            double[,] data = new double[dims[1], dims[0]];
 
+            Heatmap hm = formsPlot1.Plot.Add.Heatmap(data);
+            hm.FlipVertically = true; // Inverter eixo y
             formsPlot1.Plot.Axes.AutoScale();
+
             hm.Colormap = new ScottPlot.Colormaps.Grayscale(); // mapa de cores
             var cb = formsPlot1.Plot.Add.ColorBar(hm); // colorbar
-
 
             // Ler o dataset do HDF, linha por linha
             _ = Task.Run(() =>
@@ -67,18 +69,17 @@ namespace HDF_ShowMap
                         {
                             sum += hdfData[x, 0, z];
                         }
-
                         data[y, x] = sum;
                     }
                     hm.Update();
                     Invoke(() => formsPlot1.Refresh());
                 }
-                hm.Smooth = true;
+                hm.Smooth = false;
 
                 MessageBox.Show("Carregamento Finalizado");
             });
         }
-        private void btnOpenFile_Click(object sender, EventArgs e)
+        private void BtnOpenFile_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new()
             {
@@ -91,11 +92,10 @@ namespace HDF_ShowMap
                 ReadHDF(ofd.FileName);
             }
         }
-
         private void FormMain_Load(object sender, EventArgs e)
         {
             formsPlot1.Plot.HideGrid();
-            formsPlot1.Plot.HideLegend();
+            //formsPlot1.Plot.HideLegend();
             //formsPlot1.Plot.Layout.Frameless();
         }
     }

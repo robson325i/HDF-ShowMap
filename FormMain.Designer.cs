@@ -52,7 +52,7 @@
             btnOpenFile.TabIndex = 1;
             btnOpenFile.Text = "Abrir...";
             btnOpenFile.UseVisualStyleBackColor = true;
-            btnOpenFile.Click += btnOpenFile_Click;
+            btnOpenFile.Click += BtnOpenFile_Click;
             // 
             // ttbFileName
             // 
