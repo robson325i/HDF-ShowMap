@@ -19,6 +19,7 @@ namespace HDF_ShowMap
             }
 
             formsPlot1.Plot.Clear();
+            formsPlot1.Reset();
             formsPlot1.Refresh();
 
             _ = H5.open();
@@ -38,7 +39,7 @@ namespace HDF_ShowMap
             hm.FlipVertically = true; // Inverter eixo y
             formsPlot1.Plot.Axes.AutoScale();
 
-            hm.Colormap = new ScottPlot.Colormaps.Grayscale(); // mapa de cores
+            hm.Colormap = new ScottPlot.Colormaps.Viridis(); // mapa de cores
             var cb = formsPlot1.Plot.Add.ColorBar(hm); // colorbar
 
             // Ler o dataset do HDF, linha por linha
