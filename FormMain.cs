@@ -9,11 +9,12 @@ namespace HDF_ShowMap
 {
     public partial class FormMain : Form
     {
-        private CancellationTokenSource cancellationTokenSource;
-        private CancellationToken cancellationToken;
+        private CancellationTokenSource _cancellationTokenSource;
+        private CancellationToken _cancellationToken;
 
         public FormMain()
         {
+            _cancellationTokenSource = new CancellationTokenSource();
             InitializeComponent();
         }
         private void ShowDatasets(string fileName)
@@ -119,7 +120,7 @@ namespace HDF_ShowMap
                     Debug.WriteLine($"Runnning Task n#: {i}.");
                     for (ulong y = startRow; y < startRow + rowsCount; y++)
                     {
-                        if (cancellationToken.IsCancellationRequested)
+                        if (_cancellationToken.IsCancellationRequested)
                         {
                             Debug.WriteLine($"Task n#: {i} cancelled.");
                             return;
@@ -139,7 +140,7 @@ namespace HDF_ShowMap
                             }
                         }
                     }
-                }, cancellationToken);
+                }, _cancellationToken);
                 Thread.Sleep(50);
             }
             Task.WaitAll(tasks);
@@ -159,17 +160,17 @@ namespace HDF_ShowMap
 
             if (ofd.ShowDialog() == DialogResult.OK)
             {
-                cancellationTokenSource.Cancel();
-                cancellationTokenSource = new();
-                cancellationToken = cancellationTokenSource.Token;
+                _cancellationTokenSource.Cancel();
+                _cancellationTokenSource = new();
+                _cancellationToken = _cancellationTokenSource.Token;
                 ttbFileName.Text = ofd.FileName;
                 ShowDatasets(ttbFileName.Text);
             }
         }
         private void FormMain_Load(object sender, EventArgs e)
         {
-            cancellationTokenSource = new CancellationTokenSource();
-            cancellationToken = cancellationTokenSource.Token;
+            _cancellationTokenSource = new CancellationTokenSource();
+            _cancellationToken = _cancellationTokenSource.Token;
             formsPlot1.Plot.HideGrid();
             //formsPlot1.Plot.HideLegend();
             //formsPlot1.Plot.Layout.Frameless();
@@ -177,9 +178,9 @@ namespace HDF_ShowMap
 
         private void button3_Click(object sender, EventArgs e)
         {
-            cancellationTokenSource.Cancel();
-            cancellationTokenSource = new();
-            cancellationToken = cancellationTokenSource.Token;
+            _cancellationTokenSource.Cancel();
+            _cancellationTokenSource = new();
+            _cancellationToken = _cancellationTokenSource.Token;
 
             string? dataset;
             try
