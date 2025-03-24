@@ -1,6 +1,7 @@
 ﻿using HDF.PInvoke;
 using HDF5CSharp;
 using HDF5CSharp.DataTypes;
+using ScottPlot.Panels;
 using ScottPlot.Plottables;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -11,7 +12,7 @@ namespace HDF_ShowMap
     {
         private CancellationTokenSource _cancellationTokenSource;
         private CancellationToken _cancellationToken;
-
+        private ColorBar _colorBar;
         public FormMain()
         {
             _cancellationTokenSource = new CancellationTokenSource();
@@ -58,7 +59,6 @@ namespace HDF_ShowMap
             }
 
             formsPlot1.Plot.Clear();
-            formsPlot1.Reset();
             formsPlot1.Refresh();
 
             _ = H5.open();
@@ -76,12 +76,20 @@ namespace HDF_ShowMap
 
             Heatmap hm = formsPlot1.Plot.Add.Heatmap(data);
             hm.FlipVertically = true; // Inverter eixo y
+            formsPlot1.Plot.Axes.SquareUnits();
             formsPlot1.Plot.Axes.AutoScale();
 
             hm.Colormap = new ScottPlot.Colormaps.Viridis(); // mapa de cores
             hm.Smooth = false;
-            var cb = formsPlot1.Plot.Add.ColorBar(hm); // colorbar
+            
+            if (_colorBar != null)
+            {
+                formsPlot1.Plot.Remove(_colorBar);
+            }
 
+            _colorBar = formsPlot1.Plot.Add.ColorBar(hm); // colorbar
+            formsPlot1.Refresh();
+            
             int threadCount = Environment.ProcessorCount;
             if (threadCount > 1)
             {
